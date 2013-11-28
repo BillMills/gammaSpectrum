@@ -1,0 +1,48 @@
+<html>
+
+	<head>
+		<script src="gammaSpectrum.js" type="text/javascript"></script>
+	</head>
+
+	<body>
+		<canvas id='spectrumCanvas' width='900px' height='450px'></canvas>
+		<div id='coords'></div>
+		<button id='unzoom'>Unzoom</button>
+		<button id='fitting'>Put A Gaussian On It!</button>
+		<button id='left'>Step Left</button>
+		<button id='right'>Step Right</button>
+		<div id='fitResults'></div>
+
+		<script>
+			var viewer = new spectrumViewer('spectrumCanvas');
+
+			//use the dummy spectrum:
+			viewer.plotBuffer['demoSpectrum'] = viewer.fakeData.energydata0;
+
+			//draw spectra
+			viewer.plotData();
+
+			//report mouse bin in a div
+			viewer.mouseMoveCallback = function(x, y){
+				document.getElementById('coords').innerHTML = 'x='+x+', y='+y;
+			}
+			//unzoom the plot:
+			document.getElementById('unzoom').onclick = viewer.unzoom.bind(viewer);
+
+			//enter 'fit' mode:
+			viewer.fitTarget = 'demoSpectrum';
+			document.getElementById('fitting').onclick = viewer.setupFitMode.bind(viewer);
+
+			//set up fit callback
+			viewer.fitCallback = function(mean, width){
+				document.getElementById('fitResults').innerHTML = 'mean = '+mean+', width = '+width;
+			}
+
+			//set up scrolling
+			document.getElementById('left').onclick = viewer.scrollSpectra.bind(viewer, -100);
+			document.getElementById('right').onclick = viewer.scrollSpectra.bind(viewer, 100);
+
+		</script>
+	</body>
+
+</html>
