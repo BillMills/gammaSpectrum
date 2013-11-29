@@ -11,7 +11,7 @@ Tested in Chrome (FF any minute now), and distributed under the MIT license.
 Setting up gammaSpectrum is simple!  All you need to include in your page is the core gammaSpectrum.js, nothing else required.  All objects are kept nicely namespaced in the spectrumViewer object, and one function each are appended to the prototypes of canvas and Math, respectively.
 
 ##Instantiation
-Once it's loaded, spectrums can be plotted on any <canvas> element.  Just declare a new spectrumViewer object, pointing to your canvas' ID:
+Once it's loaded, spectrums can be plotted on any \<canvas\> element.  Just declare a new spectrumViewer object, pointing to your canvas' ID:
 
     var viewer = new spectrumViewer('spectrumCanvas');
     
