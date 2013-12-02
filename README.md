@@ -40,7 +40,7 @@ There are a bunch of default interactions defined for walking around your spectr
 Open up the demo.html example in a browser, and click on either side of one of the peaks - voila!  The display zooms in to be bounded by the two x-bins you clicked on, no extra setup required.
 
 ####Unzoom
-Unzoom is set up by default as the canvas' double-click feature.  Also, the demo provides and example of attaching the unzoom() method to a button. 
+Unzoom is set up by default as the canvas' double-click feature.  Also, the demo provides an example of attaching the unzoom() method to a button. 
 
 ####Drag Window
 Mouse down on the plot, drag across, and release - the window zooms in on the range you dragged over.
