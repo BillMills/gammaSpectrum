@@ -155,7 +155,7 @@ function spectrumViewer(canvasID){
 
 		//x axis title:
 		this.context.textBaseline = 'bottom';
-		this.context.fillText(this.xAxisTitle, this.canvas.width - this.rightMargin - this.context.measureText(this.xAxisTitle).width, this.canvas.height);
+		this.context.fillText(this.xAxisTitle, this.canvas.width - this.rightMargin - this.context.measureText(this.xAxisTitle).width, this.canvas.height - this.fontScale);
 
 		//y axis title:
 		this.context.textBaseline = 'alphabetic';
@@ -225,7 +225,7 @@ function spectrumViewer(canvasID){
 		for(thisSpec in this.plotBuffer){
 			this.context.textBaseline = 'top';
 			this.context.fillStyle = this.dataColor[j];
-			this.context.fillText(thisSpec + ': '+this.entries[thisSpec] + ' entries', this.canvas.width - this.rightMargin - this.context.measureText(thisSpec + ': '+this.entries[thisSpec] + 'entries').width, j*this.fontScale);
+			this.context.fillText(thisSpec + ': '+this.entries[thisSpec] + ' entries', this.canvas.width - this.rightMargin - this.context.measureText(thisSpec + ': '+this.entries[thisSpec] + 'entries').width, (j+1)*this.fontScale);
 
 			//SVparam.data=thisData[thisSpec].slice();
 
@@ -530,6 +530,10 @@ function spectrumViewer(canvasID){
 			this.DragWindow();
 			this.ClickWindow( parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin) );
 	}.bind(this);
+
+	this.canvas.ondblclick = function(event){
+		this.unzoom();
+	}.bind(this);
 }
 
 //stick a coordinate tracker on the canvas prototype:
@@ -569,4 +573,4 @@ HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
 //tell the Math library about log base 10:
 Math.log10 = function(n) {
 	return (Math.log(n)) / (Math.log(10));
-}
+};
