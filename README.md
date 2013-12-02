@@ -3,7 +3,7 @@ gammaSpectrum
 
 Welcome!  gammaSpectrum.js is a simple, lightweight JavaScript tool for making interactive histograms in the browser, originally developed for the GRIFFIN Collaboration at TRIUMF.  gammaSpectrum is still under heavy development, so check back for new features and feel free to make requests!
 
-Tested in Chrome (FF any minute now), and distributed under the MIT license.
+Tested in Chrome & FF, and distributed under the MIT license.
 
 #Usage
 
