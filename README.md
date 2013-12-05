@@ -8,7 +8,7 @@ Tested in Chrome & FF, and distributed under the MIT license.
 #Usage
 
 ##Set-Up
-Setting up gammaSpectrum is simple!  All you need to include in your page is the core gammaSpectrum.js, and the fabulous (easel.js)[http://www.createjs.com/#!/EaselJS] via 
+Setting up gammaSpectrum is simple!  All you need to include in your page is the core gammaSpectrum.js, and the fabulous [easel.js](http://www.createjs.com/#!/EaselJS) via 
 
     <script src="http://code.createjs.com/easeljs-0.7.0.min.js"></script>
     
