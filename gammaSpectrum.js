@@ -83,6 +83,7 @@ function spectrumViewer(canvasID){
 	this.FitLimitLower = -1; //fitting limits
 	this.FitLimitUpper = -1;
 	this.fitCallback = function(){}; //callback to run after fitting, arguments are (center, width)
+	this.MLfit = true; //do a maximum likelihood fit for putting gaussians on peaks; otherwise fit just estimates gaussian form mode and half-max
 
     //cursors
     this.cursorX = 0; //x-bin of cursor
@@ -455,7 +456,7 @@ function spectrumViewer(canvasID){
 	//stick a gaussian on top of the spectrum fitKey between the fit limits
 	this.fitData = function(fitKey){
 		var cent, fitdata, i, max, width, x, y, height;
-		var fitLine;
+		var fitLine, fitter;
 
 		//suspend the refresh
 		window.clearTimeout(this.refreshHandler);
@@ -463,10 +464,11 @@ function spectrumViewer(canvasID){
 		if(this.FitLimitLower<0) this.FitLimitLower=0;
 		if(this.FitLimitUpper>this.XaxisLimitAbsMax) this.FitLimitUpper = this.XaxisLimitAbsMax;
 
+ 		//old method just sticks a hat on the peak; use this as initial guess
 		max=1;
 
 		fitdata=this.plotBuffer[fitKey];
-		fitdata=fitdata.slice(this.FitLimitLower, this.FitLimitUpper);
+		fitdata=fitdata.slice(this.FitLimitLower, this.FitLimitUpper+1);
 
 		// Find maximum Y value in the fit data
 		if(Math.max.apply(Math, fitdata)>max){
@@ -490,6 +492,20 @@ function spectrumViewer(canvasID){
 		width/=2.35;
 
 		cent=cent+this.FitLimitLower+0.5;
+
+		//use the new prototype fitting package to do a maximum likelihood gaussian fit:
+		if(this.MLfit){
+			fitter = new histofit();
+			for(i=this.FitLimitLower; i<=this.FitLimitUpper; i++)
+				fitter.x[i-this.FitLimitLower] = i+0.5;
+			fitter.y=fitdata;
+			fitter.fxn = function(x, par){return par[0]*Math.exp(-1*(((x-par[1])*(x-par[1]))/(2*par[2]*par[2])))};
+			fitter.guess = [max, cent, width];
+			fitter.fitit();
+			max = fitter.param[0];
+			cent = fitter.param[1];
+			width = fitter.param[2];		
+		}
 
 		//set up canvas for drawing fit line
 		fitLine = new createjs.Shape();
