@@ -59,7 +59,7 @@ The fitting suite in gammaSpectrum, fitit.js, is a first-pass at a maximum likel
 
     fitter.x: array containing the left edge of each channel in x
     fitter.y: array containing the y values corresponding the the channels in fitter.x
-    fitter.fxn: JS function of the form function(x, par), where x is the indept. variable par is an array of arguments. 
+    fitter.fxn: JS function of the form function(x, par), where x is the indept. variable and par is an array of arguments. 
     fitter.guess: guess for the initial value of par in fitter.fxn
     
 At present, the fitter assumes channels are all 1 unit wide, and associates the corresponding y value with the center of that bin; better generality forthcoming.  Likelihood is computed from the poissonian probability of seeing the observed number of counts in each bin if the true average is given by fitter.fxn; this likelihood is extremized by walking down the gradient of the likelihood function from the point in parameter space fitter.guess, towards the corresponding local minimum.  Derivatives for this gradient are approximated using a two-step Richardson extrapolation.
