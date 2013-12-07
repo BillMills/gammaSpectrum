@@ -53,4 +53,15 @@ Mouse down on the plot, drag across, and release - the window zooms in on the ra
 Functionality is provided to easily make scroll buttons for your spectrum.  The 'left' and 'right' buttons in demo.html are an example of how to set these up; try changing the +-100 parameter to change how far the plot scrolls on every click.
 
 ###Fitting
-gammaSpectrum was built for looking at gamma ray spectra (surprise!), so currently the only fit function available is a gaussian.  Also, its not really a fit, just a quick best-guess - more functions and proper fitting are high on the development list, so check back soon!  As is, to fit a peak, tell the spectrumViewer object which spectrum you want to fit by setting the member variable fitTarget to the key tagging the data in plotBuffer, and then enter fit mode for the spectrumViewer object by calling the member function setupFitMode.  Then, just click on the plot to the left and right of the peak you want to fit, and voila!  A gaussian guess is drawn.  Pass in a callback to fetch the fit parameters out and do something with them, like the example in demo.html.
+gammaSpectrum was built for looking at gamma ray spectra (surprise!), so currently the only fit function available is a gaussian.  
+
+The fitting suite in gammaSpectrum, fitit.js, is a first-pass at a maximum likelihood fitter.  An instance of this tool requires the following minimal member variables to be defined in order to converge a fit:
+
+    fitter.x: array containing the left edge of each channel in x
+    fitter.y: array containing the y values corresponding the the channels in fitter.x
+    fitter.fxn: JS function of the form function(x, par), where x is the indept. variable par is an array of arguments. 
+    fitter.guess: guess for the initial value of par in fitter.fxn
+    
+At present, the fitter assumes channels are all 1 unit wide, and associates the corresponding y value with the center of that bin; better generality forthcoming.  Likelihood is computed from the poissonian probability of seeing the observed number of counts in each bin if the true average is given by fitter.fxn; this likelihood is extremized by walking down the gradient of the likelihood function from the point in parameter space fitter.guess, towards the corresponding local minimum.  Derivatives for this gradient are approximated using a two-step Richardson extrapolation.
+    
+To fit a peak, tell the spectrumViewer object which spectrum you want to fit by setting the member variable fitTarget to the key tagging the data in plotBuffer, and then enter fit mode for the spectrumViewer object by calling the member function setupFitMode.  Then, just click on the plot to the left and right of the peak you want to fit, and voila!  A gaussian guess is drawn.  Pass in a callback to fetch the fit parameters out and do something with them, like the example in demo.html.
