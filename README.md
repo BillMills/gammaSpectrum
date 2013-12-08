@@ -22,10 +22,14 @@ Once it's loaded, spectrums can be plotted on any \<canvas\> element.  Just decl
 Go ahead and declare as many of these canvas / viewer pairs as you need - everything is encapsulated so there shouldn't be any collision problems.
 
 ##Loading Data
-Data to be plotted is loaded into the spectrumViewer object in its plotBuffer member variable.  This is a key-value store where each key is the name of the plot, and the corresponding value is an array containing the number of counts in bin i at array index i.  Load one like:
+Data to be plotted is loaded using the .addData method:
 
-    viewer.plotBuffer['test'] = [0,0,1,4,9,16,9,4,1,0,0];
+    viewer.addData('myPlot', [0,0,1,4,9,16,9,4,1,0,0]);
     
+would add the array in the second argument to the list of histograms to be plotted, and assign the key 'myPlot' to reference it by.  Data series can be removed with
+
+    viewer.removeData('myPlot');
+
 gammaSpectrum comes with a fake spectrum you can play around with, which is loaded in the demo page.
 
 ##Options
