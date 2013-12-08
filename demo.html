@@ -20,7 +20,7 @@
 				var viewer = new spectrumViewer('spectrumCanvas');
 
 				//use the dummy spectrum:
-				viewer.plotBuffer['demoSpectrum'] = viewer.fakeData.energydata0;
+				viewer.addData('demoSpectrum', viewer.fakeData.energydata0);
 
 				//draw spectra
 				viewer.plotData();
