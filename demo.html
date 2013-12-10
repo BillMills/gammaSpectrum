@@ -15,6 +15,8 @@
 		<button id='right'>Step Right</button>
 		<button id='linear'>Linear Y</button>
 		<button id='log'>Log Y</button>
+		<button id='hide'>Hide Spectrum</button>
+		<button id='show'>Show Spectrum</button>
 		<div id='fitResults'></div>
 
 		<script>
@@ -50,6 +52,10 @@
 				//linear and log views:
 				document.getElementById('linear').onclick = viewer.setAxisType.bind(viewer, 'linear');
 				document.getElementById('log').onclick = viewer.setAxisType.bind(viewer, 'log');
+
+				//toggle spectrum
+				document.getElementById('hide').onclick = viewer.toggleSpectrum.bind(viewer, 'demoSpectrum', true);
+				document.getElementById('show').onclick = viewer.toggleSpectrum.bind(viewer, 'demoSpectrum', false);
 			}
 
 

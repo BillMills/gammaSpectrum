@@ -76,6 +76,7 @@ function spectrumViewer(canvasID){
 	this.entries = {}; //number of entries in each displayed spectrum
 	this.dataColor = ["#FFFFFF", "#FF0000", "#00FFFF", "#44FF44", "#FF9900", "#0066FF", "#FFFF00", "#FF00CC", "#00CC00", "#994499"]; //colors to draw each plot line with
 	this.colorAssignment = [null, null, null, null, null, null, null, null, null, null]; //holds the data series key in the array position corresponding to the color to draw it with from this.dataColor
+	this.hideSpectrum = {}; //any spectrum name used as a key holding a truthy value here will be skipped during plotting
 
 	//fitting
 	this.fitTarget = null //id of the spectrum to fit to
@@ -237,6 +238,9 @@ function spectrumViewer(canvasID){
 		this.maxYvalue=this.YaxisLimitMax;
 		// Loop through to get the data and set the Y axis limits
 		for(thisSpec in this.plotBuffer){
+			//skip hidden spectra
+			if(this.hideSpectrum[thisSpec]) continue;
+
 			//Find the maximum X value from the size of the data
 			if(this.plotBuffer[thisSpec].length>this.XaxisLimitAbsMax){
 				this.XaxisLimitAbsMax=this.plotBuffer[thisSpec].length;
@@ -279,6 +283,9 @@ function spectrumViewer(canvasID){
 		// Now the limits are set loop through and plot the data points
 		j = 0; //j counts plots in the drawing loop
 		for(thisSpec in this.plotBuffer){
+			//skip hidden spectra
+			if(this.hideSpectrum[thisSpec]) continue;			
+
 			color = this.dataColor[this.colorAssignment.indexOf(thisSpec)];
 			text = new createjs.Text(thisSpec + ': '+this.entries[thisSpec] + ' entries', this.context.font, color);
 			text.textBaseline = 'top';
@@ -552,6 +559,12 @@ function spectrumViewer(canvasID){
 		this.fitModeEngage = 0;
 
 		this.fitCallback(cent, width);
+	};
+
+	//suppress or unsuppress a spectrum from being shown
+	this.toggleSpectrum = function(spectrumName, hide){
+		this.hideSpectrum[spectrumName] = hide;
+		this.plotData();
 	};
 
 	//////////////////////////////////////////////////////

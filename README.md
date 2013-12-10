@@ -59,6 +59,9 @@ Functionality is provided to easily make scroll buttons for your spectrum.  The 
 ####Log Scale
 Linear and Log Y axes are available per the example.
 
+####
+Spectrums that have been loaded into the spectrum viewer can be hidden and recalled at will by use of the toggleSpectrum method.  toggleSpectrum takes two arguments: the name of the data set to show or hide, and a boolean corresponding to whether or not to hide the spectrum (ie true === hidden).
+
 ###Fitting
 gammaSpectrum was built for looking at gamma ray spectra (surprise!), so currently the only fit function available is a gaussian.  
 
