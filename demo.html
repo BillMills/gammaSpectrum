@@ -13,6 +13,8 @@
 		<button id='fitting'>Put A Gaussian On It!</button>
 		<button id='left'>Step Left</button>
 		<button id='right'>Step Right</button>
+		<button id='linear'>Linear Y</button>
+		<button id='log'>Log Y</button>
 		<div id='fitResults'></div>
 
 		<script>
@@ -44,6 +46,10 @@
 				//set up scrolling
 				document.getElementById('left').onclick = viewer.scrollSpectra.bind(viewer, -100);
 				document.getElementById('right').onclick = viewer.scrollSpectra.bind(viewer, 100);
+
+				//linear and log views:
+				document.getElementById('linear').onclick = viewer.setAxisType.bind(viewer, 'linear');
+				document.getElementById('log').onclick = viewer.setAxisType.bind(viewer, 'log');
 			}
 
 

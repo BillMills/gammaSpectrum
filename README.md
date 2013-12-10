@@ -56,6 +56,9 @@ Mouse down on the plot, drag across, and release - the window zooms in on the ra
 ####Scroll Window
 Functionality is provided to easily make scroll buttons for your spectrum.  The 'left' and 'right' buttons in demo.html are an example of how to set these up; try changing the +-100 parameter to change how far the plot scrolls on every click.
 
+####Log Scale
+Linear and Log Y axes are available per the example.
+
 ###Fitting
 gammaSpectrum was built for looking at gamma ray spectra (surprise!), so currently the only fit function available is a gaussian.  
 
