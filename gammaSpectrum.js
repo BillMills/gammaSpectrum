@@ -664,8 +664,8 @@ function spectrumViewer(canvasID){
 
 	this.canvas.onmouseout = function(event){
 		document.body.style.cursor = 'default';
-		var that = this;
-		window.setTimeout(function(){that.containerOverlay.removeAllChildren(); that.stage.update();}, 50);
+		this.containerOverlay.removeAllChildren();
+		this.stage.update();
 	}.bind(this);
 
 	this.canvas.onmousedown = function(event){
