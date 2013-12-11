@@ -91,7 +91,7 @@ function spectrumViewer(canvasID){
     this.cursorX = 0; //x-bin of cursor
     this.cursorY = 0; //y-bin of cursor
     this.mouseMoveCallback = function(){}; //callback on moving the cursor over the plot, arguments are (x-bin, y-bin)
-    this.highlightColor = '#8e44ad';
+    this.highlightColor = '#8e44ad'; //color of drag highlight
 
     //click interactions
     this.XMouseLimitxMin = 0; //limits selected with the cursor
@@ -567,6 +567,35 @@ function spectrumViewer(canvasID){
 		this.plotData();
 	};
 
+	//add a data series to the list to be plotted with key name and content [data]
+	this.addData = function(name, data){
+		var nSeries, i;
+
+		//refuse to display more than 10 data series, it's ugly.
+		nSeries = Object.keys(this.dataBuffer).length;
+		if(nSeries > this.dataColor.length){
+			alert('gammaSpectrum only allows at most' + this.dataColor.length + 'series to be plotted simultaneously.');
+			return;
+		}
+
+		//choose the first available color and assign it to this data series
+		i=0;
+		while(this.colorAssignment[i]) i++;
+		this.colorAssignment[i] = name;
+
+		//append the data to the data buffer
+		this.plotBuffer[name] = data;
+	};
+
+	//remove a data series from the buffer
+	this.removeData = function(name){
+		//free the color
+		this.colorAssignment[this.colorAssignment.indexOf(name)] = null;
+
+		//delete the data
+		delete this.plotBuffer[name];
+	};
+
 	//////////////////////////////////////////////////////
 	//initial setup///////////////////////////////////////
 	//////////////////////////////////////////////////////
@@ -635,7 +664,9 @@ function spectrumViewer(canvasID){
 
 	this.canvas.onmouseout = function(event){
 		document.body.style.cursor = 'default';
-	};
+		var that = this;
+		window.setTimeout(function(){that.containerOverlay.removeAllChildren(); that.stage.update();}, 50);
+	}.bind(this);
 
 	this.canvas.onmousedown = function(event){
 		this.highlightStart = this.canvas.relMouseCoords(event).x;
@@ -652,35 +683,6 @@ function spectrumViewer(canvasID){
 	this.canvas.ondblclick = function(event){
 		this.unzoom();
 	}.bind(this);
-
-	//add a data series to the list to be plotted with key name and content [data]
-	this.addData = function(name, data){
-		var nSeries, i;
-
-		//refuse to display more than 10 data series, it's ugly.
-		nSeries = Object.keys(this.dataBuffer).length;
-		if(nSeries > this.dataColor.length){
-			alert('gammaSpectrum only allows at most' + this.dataColor.length + 'series to be plotted simultaneously.');
-			return;
-		}
-
-		//choose the first available color and assign it to this data series
-		i=0;
-		while(this.colorAssignment[i]) i++;
-		this.colorAssignment[i] = name;
-
-		//append the data to the data buffer
-		this.plotBuffer[name] = data;
-	}
-
-	//remove a data series from the buffer
-	this.removeData = function(name){
-		//free the color
-		this.colorAssignment[this.colorAssignment.indexOf(name)] = null;
-
-		//delete the data
-		delete this.plotBuffer[name];
-	}
 
 }
 
