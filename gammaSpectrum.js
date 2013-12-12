@@ -35,7 +35,7 @@ function spectrumViewer(canvasID){
 	this.stage.addChild(this.containerMain);
 	this.stage.addChild(this.containerOverlay);
 
-	//axes
+	//axes & drawing
 	this.fontScale = Math.min(Math.max(this.canvas.width / 50, 10), 16); // 10 < fontScale < 16
 	this.context.font = this.fontScale + 'px Arial';
 	this.leftMargin = Math.max(7*this.fontScale, this.canvas.width*0.05); //px
@@ -66,6 +66,7 @@ function spectrumViewer(canvasID){
 	this.expFont = '12px Arial'; //default font for exponents
 	this.xAxisTitle = 'Channels'; //default x-axis title
 	this.yAxisTitle = 'Counts'; //default y-axis title
+	this.drawCallback = function(){}; //callback after plotData, no arguments passed.
 
 	//data
 	this.dataBuffer = {}; //buffer holding all the specta we've downloaded, as 'name':data[], 
@@ -335,6 +336,9 @@ function spectrumViewer(canvasID){
 		} // End of for loop
 		this.stage.update();
 
+		//callback
+		this.drawCallback();
+
 		// Pause for some time and then recall this function to refresh the data display
 		if(this.RefreshTime>0 && RefreshNow==1) this.refreshHandler = setTimeout(function(){plotData(1, 'true')},this.RefreshTime*1000); 	
 	};
@@ -547,13 +551,6 @@ function spectrumViewer(canvasID){
 
 		this.containerMain.addChild(fitLine);
 		this.stage.update();
-
-		/* TODO: probably replace this with a callback
-		SVparam.word = 'Height = ' + max + ' Width = ' + width.toFixed(3) + ' Centroid = ' + cent;
-		document.getElementById('fitbox').innerHTML = SVparam.word;
-		SVparam.word = 'H=' + max + ',W=' + width.toFixed(3) + ',C=' + cent + "; ";
-		document.getElementById('spec_fits0').innerHTML = SVparam.word+document.getElementById('spec_fits0').innerHTML;
-		*/
 
 		this.fitted=1;
 		this.fitModeEngage = 0;
