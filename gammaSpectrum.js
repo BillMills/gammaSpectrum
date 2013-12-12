@@ -474,6 +474,13 @@ function spectrumViewer(canvasID){
 		this.FitLimitUpper=-1;		
 	};
 
+	//abandon fit mode without fitting
+	this.leaveFitMode = function(){
+		this.fitModeEngage = 0;
+		this.FitLimitLower=-1;
+		this.FitLimitUpper=-1;	
+	}
+
 	//stick a gaussian on top of the spectrum fitKey between the fit limits
 	this.fitData = function(fitKey){
 		var cent, fitdata, i, max, width, x, y, height;
