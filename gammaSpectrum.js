@@ -332,7 +332,7 @@ function spectrumViewer(canvasID){
 				} else continue;
 			}
 			//finish the canvas path:
-			if(this.plotBuffer[thisSpec].length == this.XaxisLimitMin) 
+			if(this.plotBuffer[thisSpec].length == this.XaxisLimitMax) 
 				histLine.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin );
 			this.containerMain.addChild(histLine);
 			j++;
@@ -433,11 +433,8 @@ function spectrumViewer(canvasID){
 		//TBD: callbacks?
 	};
 
-	//zoom out to the full x-range
-	this.unzoom = function(){
-		var thisSpec;
-
-		//get the x axis limits correct
+	//recalculate x axis limits, for use when plots are deleted or hidden
+	this.adjustXaxis = function(){
 		this.XaxisLimitMin = 0;
 		this.XaxisLimitAbsMax = 0;
 		for(thisSpec in this.plotBuffer){
@@ -447,25 +444,16 @@ function spectrumViewer(canvasID){
 			//Find the maximum X value from the size of the data
 			this.XaxisLimitAbsMax = Math.max(this.XaxisLimitAbsMax, this.plotBuffer[thisSpec].length);
 		}
+		this.XaxisLimitMax = this.XaxisLimitAbsMax;		
+	}
 
-		this.XaxisLimitMax = this.XaxisLimitAbsMax;
+	//zoom out to the full x-range
+	this.unzoom = function(){
+		var thisSpec;
+
+		this.adjustXaxis();
+
 		this.plotData();
-
-/*TBD: callback?
-		//1D
-		if(document.getElementById('LowerXLimit')){
-			SVparam.XaxisLimitMin=0;
-			SVparam.XaxisLimitMax=SVparam.XaxisLimitAbsMax;
-
-			//update input field values and trigger their onchange:
-			document.getElementById("LowerXLimit").value=SVparam.XaxisLimitMin;
-			document.getElementById("UpperXLimit").value=SVparam.XaxisLimitMax;
-			document.getElementById('LowerXLimit').onchange();
-			document.getElementById('UpperXLimit').onchange();
-
-			plotData();
-		}
-		*/
 	};
 
 	//set the axis to 'linear' or 'log', and repaint
@@ -582,6 +570,9 @@ function spectrumViewer(canvasID){
 	//suppress or unsuppress a spectrum from being shown
 	this.toggleSpectrum = function(spectrumName, hide){
 		this.hideSpectrum[spectrumName] = hide;
+
+		this.adjustXaxis();
+
 		this.plotData();
 	};
 
