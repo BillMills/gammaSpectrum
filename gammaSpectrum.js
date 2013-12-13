@@ -301,33 +301,39 @@ function spectrumViewer(canvasID){
 				if(i<this.XaxisLimitMin || i>this.XaxisLimitMax) continue;
 
 				// Protection in Overlay mode for spectra which are shorter (in x) than the longest spectrum overlayed.
-				if(i>=this.plotBuffer[thisSpec].length) continue;
-
-				if(this.AxisType==0){
-					//draw canvas line:
+				if(i==this.plotBuffer[thisSpec].length){
 					//left side of bar
-					histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - this.plotBuffer[thisSpec][i]*this.countHeight );
-					//top of bar
-					histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - this.plotBuffer[thisSpec][i]*this.countHeight );
-				}
+					histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );				
+				} else if(i<this.plotBuffer[thisSpec].length){
 
-				if(this.AxisType==1){
-					//draw canvas line:
-					if(this.plotBuffer[thisSpec][i] > 0){
+					if(this.AxisType==0){
+						//draw canvas line:
 						//left side of bar
-						histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin))*this.countHeight );
+						histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - this.plotBuffer[thisSpec][i]*this.countHeight );
 						//top of bar
-						histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin))*this.countHeight )
-					} else {
-						//drop to the x axis
-						histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
-						//crawl along x axis until log-able data is found:
-						histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
+						histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - this.plotBuffer[thisSpec][i]*this.countHeight );
 					}
-				}
+
+					if(this.AxisType==1){
+						//draw canvas line:
+						if(this.plotBuffer[thisSpec][i] > 0){
+							//left side of bar
+							histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin))*this.countHeight );
+							//top of bar
+							histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin))*this.countHeight )
+						} else {
+							//drop to the x axis
+							histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
+							//crawl along x axis until log-able data is found:
+							histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
+						}
+					}
+
+				} else continue;
 			}
 			//finish the canvas path:
-			histLine.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin );
+			if(this.plotBuffer[thisSpec].length == this.XaxisLimitMin) 
+				histLine.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin );
 			this.containerMain.addChild(histLine);
 			j++;
 		} // End of for loop
