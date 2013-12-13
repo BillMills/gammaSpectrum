@@ -229,21 +229,19 @@ function spectrumViewer(canvasID){
 		var text, histLine;
 
 		this.YaxisLimitMax=5;
-		this.XaxisLength = this.XaxisLimitMax - this.XaxisLimitMin;
 		
 		//abandon the fit when re-drawing the plot
 		this.fitted = false;
 
 		this.maxYvalue=this.YaxisLimitMax;
+		this.XaxisLimitAbsMax = 0;
 		// Loop through to get the data and set the Y axis limits
 		for(thisSpec in this.plotBuffer){
 			//skip hidden spectra
 			if(this.hideSpectrum[thisSpec]) continue;
 
 			//Find the maximum X value from the size of the data
-			if(this.plotBuffer[thisSpec].length>this.XaxisLimitAbsMax){
-				this.XaxisLimitAbsMax=this.plotBuffer[thisSpec].length;
-			}
+			this.XaxisLimitAbsMax = Math.max(this.XaxisLimitAbsMax, this.plotBuffer[thisSpec].length);
 
 			// Find maximum Y value in the part of the spectrum to be displayed
 			if(Math.max.apply(Math, this.plotBuffer[thisSpec].slice(Math.floor(this.XaxisLimitMin),Math.floor(this.XaxisLimitMax)))>this.maxYvalue){
@@ -262,7 +260,7 @@ function spectrumViewer(canvasID){
 
 		}// End of for loop
 
-		// Adjust the Y axis limit and compression and redraw the axis
+		// Adjust the axis limits and compression and redraw the axis
 		if(this.maxYvalue>5){
 			if(this.AxisType==0) this.YaxisLimitMax=Math.floor(this.maxYvalue*1);
 			if(this.AxisType==1) this.YaxisLimitMax=this.maxYvalue*100;
@@ -276,6 +274,9 @@ function spectrumViewer(canvasID){
 
 		if(this.AxisType==1)
 			this.YaxisLength=Math.log10(this.YaxisLimitMax-this.YaxisLimitMin);
+
+		this.XaxisLimitMax = this.XaxisLimitAbsMax;
+		this.XaxisLength = this.XaxisLimitMax - this.XaxisLimitMin;
 
 		this.drawFrame();
 
