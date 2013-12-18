@@ -486,6 +486,7 @@ function spectrumViewer(canvasID){
 		var thisSpec;
 
 		this.adjustXaxis();
+		this.clearFits();
 
 		this.plotData();
 	};
@@ -606,7 +607,7 @@ function spectrumViewer(canvasID){
 	this.clearFits = function(callback){
 		this.containerFit.removeAllChildren();
 		this.stage.update();
-		
+
 		if(callback)
 			callback();
 	}
