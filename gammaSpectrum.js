@@ -132,6 +132,7 @@ function spectrumViewer(canvasID){
 		axis.graphics.mt(this.leftMargin, this.topMargin);
 		axis.graphics.lt(this.leftMargin, this.canvas.height-this.bottomMargin);
 		axis.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin);
+		axis.graphics.lt(this.canvas.width - this.rightMargin, this.topMargin);
 		this.containerMain.addChild(axis);
 
 
@@ -253,14 +254,14 @@ function spectrumViewer(canvasID){
 			color = this.dataColor[this.colorAssignment.indexOf(thisSpec)];
 			text = new createjs.Text(thisSpec + ': '+this.entries[thisSpec] + ' entries', this.context.font, color);
 			text.textBaseline = 'top';
-			text.x = this.canvas.width - this.rightMargin - this.context.measureText(thisSpec + ': '+this.entries[thisSpec] + 'entries').width;
+			text.x = this.canvas.width - this.rightMargin - this.context.measureText(thisSpec + ': '+this.entries[thisSpec] + 'entries').width - this.fontScale;
 			text.y = (j+1)*this.fontScale;
 			this.containerMain.addChild(text);
 
 			// Loop through the data spectrum that we have
 			histLine = new createjs.Shape();
 			histLine.graphics.ss(this.axisLineWidth).s(color);
-			histLine.graphics.mt(this.leftMargin, this.canvas.height - this.bottomMargin);
+			//histLine.graphics.mt(this.leftMargin, this.canvas.height - this.bottomMargin);
 			for(i=Math.floor(this.XaxisLimitMin); i<Math.floor(this.XaxisLimitMax); i++){
 
 				// Protection at the end of the spectrum (minimum and maximum X)
@@ -275,7 +276,10 @@ function spectrumViewer(canvasID){
 					if(this.AxisType==0){
 						//draw canvas line:
 						//left side of bar
-						histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0,(this.plotBuffer[thisSpec][i] - this.YaxisLimitMin))*this.countHeight );
+						if(i != Math.floor(this.XaxisLimitMin))
+							histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0,(this.plotBuffer[thisSpec][i] - this.YaxisLimitMin))*this.countHeight );
+						else
+							histLine.graphics.mt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0,(this.plotBuffer[thisSpec][i] - this.YaxisLimitMin))*this.countHeight );
 						//top of bar
 						histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0,(this.plotBuffer[thisSpec][i] - this.YaxisLimitMin))*this.countHeight );
 					}
@@ -284,12 +288,18 @@ function spectrumViewer(canvasID){
 						//draw canvas line:
 						if(this.plotBuffer[thisSpec][i] > 0){
 							//left side of bar
-							histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0, (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin)))*this.countHeight );
+							if( i != Math.floor(this.XaxisLimitMin))
+								histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0, (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin)))*this.countHeight );
+							else
+								histLine.graphics.mt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0, (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin)))*this.countHeight );
 							//top of bar
 							histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin - Math.max(0, (Math.log10(this.plotBuffer[thisSpec][i]) - Math.log10(this.YaxisLimitMin)))*this.countHeight );
 						} else {
 							//drop to the x axis
-							histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
+							if( i != Math.floor(this.XaxisLimitMin) )
+								histLine.graphics.lt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
+							else
+								histLine.graphics.mt( this.leftMargin + (i-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
 							//crawl along x axis until log-able data is found:
 							histLine.graphics.lt( this.leftMargin + (i+1-this.XaxisLimitMin)*this.binWidth, this.canvas.height - this.bottomMargin );
 						}
@@ -298,8 +308,8 @@ function spectrumViewer(canvasID){
 				} else continue;
 			}
 			//finish the canvas path:
-			if(this.plotBuffer[thisSpec].length == this.XaxisLimitMax) 
-				histLine.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin );
+			//if(this.plotBuffer[thisSpec].length == this.XaxisLimitMax) 
+			//	histLine.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin );
 			this.containerMain.addChild(histLine);
 			j++;
 		} // End of for loop
