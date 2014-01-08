@@ -22,6 +22,10 @@
 		<br><br>
 
 		<canvas id='fieldCanvas' width='450px' height='450px'></canvas>
+		<button id='left2D'>Step Left</button>
+		<button id='right2D'>Step Right</button>
+		<button id='up2D'>Step Up</button>
+		<button id='down2D'>Step Down</button>
 
 		<script>
 			function main(){
@@ -67,10 +71,19 @@
 				////////////////////////////////////////////////
 				//2D field viewer///////////////////////////////
 				////////////////////////////////////////////////
+				//declare a 2D plot
 				var field = new fieldViewer('fieldCanvas');
 
+				//set up some buttons to step around the plot
+				document.getElementById('left2D').onclick = field.scrollX.bind(field, -10);
+				document.getElementById('right2D').onclick = field.scrollX.bind(field, 10);
+				document.getElementById('down2D').onclick = field.scrollY.bind(field, -10);
+				document.getElementById('up2D').onclick = field.scrollY.bind(field, 10);
+
+				//load some data into the plotBuffer
 				field.plotBuffer = field.fakeData.gaussian;
 
+				//draw
 				field.plotData();
 
 			}

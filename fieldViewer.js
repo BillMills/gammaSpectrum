@@ -93,8 +93,9 @@ function fieldViewer(canvasID){
     this.cursorX = 0; //x-bin of cursor
     this.cursorY = 0; //y-bin of cursor
     this.cursorZ = 0; //z value of bin indexed by this.plotBuffer[this.cursorX][this.cursorY]
-    this.mouseMoveCallback = function(){}; //callback on moving the cursor over the plot, arguments are (x-bin, y-bin)
-    this.highlightColor = '#8e44ad'; //color of drag highlight
+    this.mouseMoveCallback = function(){}; //callback on moving the cursor over the plot, arguments are (x-bin, y-bin, z)
+    this.highlightColor = '#000000'; //color of drag highlight
+    this.highlightStart = -1;
 
     //click interactions
     this.XMouseLimitxMin = 0; //limits selected with the cursor
@@ -137,7 +138,7 @@ function fieldViewer(canvasID){
 		//Decorate x axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nXticks = 10;
-		tickOptions = [10, 5, 4];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.XaxisLength % tickOptions[i] < this.XaxisLength % this.nXticks)
 				this.nXticks = tickOptions[i];
@@ -151,7 +152,7 @@ function fieldViewer(canvasID){
 		binsPerTick = Math.floor((this.XaxisLimitMax - this.XaxisLimitMin) / this.nXticks);
 
 		//draw x axis ticks & labels:
-		for(i=0; i<( (this.XaxisLength % this.nXticks == 0) ? this.nXticks+1 : this.nXticks); i++){
+		for(i=0; i<( (this.XaxisLength % this.nXticks == 0 || this.XaxisLength % this.nXticks >= 1) ? this.nXticks+1 : this.nXticks); i++){
 			//ticks
 			tick = new createjs.Shape();
 			tick.graphics.ss(this.axisLineWidth).s(this.axisColor);
@@ -172,7 +173,7 @@ function fieldViewer(canvasID){
 		//Decorate y axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nYticks = 10;
-		tickOptions = [10, 5, 4];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.YaxisLength % tickOptions[i] < this.YaxisLength % this.nYticks)
 				this.nYticks = tickOptions[i];
@@ -186,7 +187,7 @@ function fieldViewer(canvasID){
 		binsPerTick = Math.floor((this.YaxisLimitMax - this.YaxisLimitMin) / this.nYticks);
 
 		//draw y axis ticks & labels:
-		for(i=0; i<( (this.YaxisLength % this.nYticks == 0) ? this.nYticks+1 : this.nYticks); i++){
+		for(i=0; i<( (this.YaxisLength % this.nYticks == 0 || this.YaxisLength % this.nYticks >= 1) ? this.nYticks+1 : this.nYticks); i++){
 			//ticks
 			tick = new createjs.Shape();
 			tick.graphics.ss(this.axisLineWidth).s(this.axisColor);
@@ -229,10 +230,10 @@ function fieldViewer(canvasID){
 		this.drawFrame();
 
 		for(i=0; i<this.plotBuffer.length; i++){
-			y0 = this.canvas.height - this.bottomMargin - (i+1)*this.binWidthY; //y coord of top left corner of bin
+			y0 = this.canvas.height - this.bottomMargin - (i+1 - this.YaxisLimitMin)*this.binWidthY; //y coord of top left corner of bin
 			for(j=0; j<this.plotBuffer[i].length; j++){
 				if(i >= this.YaxisLimitMin && i < this.YaxisLimitMax && j >= this.XaxisLimitMin && j<this.XaxisLimitMax){
-					x0 = this.leftMargin + j*this.binWidthX; //x coord of top left corner of bin
+					x0 = this.leftMargin + (j - this.XaxisLimitMin)*this.binWidthX; //x coord of top left corner of bin
 					scale = (this.plotBuffer[i][j] - this.minZ) / this.maxZ //map z value of this bin onto [0,1]
 					scale = Math.max(scale, 0);
 					scale = Math.min(scale, 1);
@@ -341,6 +342,7 @@ function fieldViewer(canvasID){
 			if(this.demandXmax > this.XaxisLimitAbsMax)
 				this.XaxisLimitAbsMax = this.demandXmax;
 		}
+		this.XaxisLength = this.XaxisLimitMax - this.XaxisLimitMin;
 		//Y
 		if(typeof this.demandYmin === 'number') this.YaxisLimitMin = this.demandYmin;
 		if(typeof this.demandYmax === 'number'){
@@ -348,6 +350,7 @@ function fieldViewer(canvasID){
 			if(this.demandYmax > this.YaxisLimitAbsMax)
 				this.YaxisLimitAbsMax = this.demandYmax;
 		}
+		this.YaxisLength = this.YaxisLimitMax - this.YaxisLimitMin;
 		//Z
 		if(typeof this.demandZmin === 'number') this.ZaxisLimitMin = this.demandZmin;
 		else this.ZaxisLimitMin = 0;
@@ -373,20 +376,34 @@ function fieldViewer(canvasID){
 
 	};
 
+	//handle clicks on the plot
+	this.ClickWindow = function(bin){
 
-
-
-
-
-
-
+		if(this.clickBounds.length == 0){
+			this.clickBounds[0] = [bin[0], bin[1]];
+		} else if(this.clickBounds[0] == 'abort'){
+			this.clickBounds = [];
+		} else if(this.clickBounds.length == 2 ){
+			this.clickBounds = [];
+			this.clickBounds[0] = [bin[0], bin[1]];
+		} else if(this.clickBounds.length == 1){
+			this.clickBounds[1] = [bin[0], bin[1]];
+			//use the mouse drag function to achieve the same effect for clicking:
+			this.XMouseLimitxMin = this.clickBounds[0][0];
+			this.XMouseLimitxMax = this.clickBounds[1][0];
+			this.YMouseLimityMin = this.clickBounds[0][1];
+			this.YMouseLimityMax = this.clickBounds[1][1];
+			this.DragWindow();
+			this.clickBounds = [];
+		}
+	};
 
 	//handle drag-to-zoom on the plot
 	this.DragWindow = function(){
 		var buffer;
 
 		//don't even try if there's only one bin selected:
-		if(this.XMouseLimitxMin != this.XMouseLimitxMax){
+		if(this.XMouseLimitxMin != this.XMouseLimitxMax && this.YMouseLimityMin != this.YMouseLimityMax){
 			//don't confuse the click limits with the click and drag limits:
 			this.clickBounds[0] = 'abort';
 
@@ -396,53 +413,70 @@ function fieldViewer(canvasID){
 				this.XMouseLimitxMax = this.XMouseLimitxMin;
 				this.XMouseLimitxMin = buffer;
 			}
+			if(this.YMouseLimityMax < this.YMouseLimityMin){
+				buffer = this.YMouseLimityMax;
+				this.YMouseLimityMax = this.YMouseLimityMin;
+				this.YMouseLimityMin = buffer;
+			}
 
 			//keep things in range
 			if(this.XMouseLimitxMin < 0) this.XMouseLimitxMin = 0;
 			if(this.XMouseLimitxMax > this.XaxisLimitAbsMax) this.XMouseLimitxMax = this.XaxisLimitAbsMax;
+			if(this.YMouseLimityMin < 0) this.YMouseLimityMin = 0;
+			if(this.YMouseLimityMax > this.YaxisLimitAbsMax) this.YMouseLimityMax = this.YaxisLimitAbsMax;
 
 			//stick into the appropriate globals
 			this.XaxisLimitMin = parseInt(this.XMouseLimitxMin);
 			this.XaxisLimitMax = parseInt(this.XMouseLimitxMax);
-	
-			//drawXaxis();
-			this.YaxisLimitMax=5;
+			this.XaxisLength = this.XaxisLimitMax - this.XaxisLimitMin;
+			this.YaxisLimitMin = parseInt(this.YMouseLimityMin);
+			this.YaxisLimitMax = parseInt(this.YMouseLimityMax);
+			this.YaxisLength = this.YaxisLimitMax - this.YaxisLimitMin;
+			this.ZaxisLimitMax=5;
 
 			this.plotData();
 
 		}
 	};
 
-	//handle clicks on the plot
-	this.ClickWindow = function(bin){
+	//recalculate x axis limits, for use when plots are deleted or hidden
+	this.adjustAxes = function(){
+		var i;
 
-		//decide what to do with the clicked limits - zoom or fit?
-		if(this.clickBounds.length == 0){
-			this.clickBounds[0] = bin;
-		} else if(this.clickBounds[0] == 'abort' && !this.fitModeEngage){
-			this.clickBounds = [];
-		} else if(this.clickBounds.length == 2 ){
-			this.clickBounds = [];
-			this.clickBounds[0] = bin;
-		} else if(this.clickBounds.length == 1){
-			this.clickBounds[1] = bin;
-			//fit mode
-			if(this.fitModeEngage){
-				this.FitLimitLower = Math.min(this.clickBounds[0], this.clickBounds[1]);
-				this.FitLimitUpper = Math.max(this.clickBounds[0], this.clickBounds[1]);
-				this.fitData(this.fitTarget);
-			} else {  //zoom mode
-				//use the mouse drag function to achieve the same effect for clicking:
-				this.XMouseLimitxMin = this.clickBounds[0];
-				this.XMouseLimitxMax = this.clickBounds[1];
-				this.DragWindow();
-				this.clickBounds = [];
+		this.XaxisLimitMin = (typeof this.demandXmin === 'number') ? this.demandXmin : 0;
+		//use override max if present
+		if(typeof this.demandXmax === 'number'){
+			this.XaxisLimitAbsMax = this.demandXmax;
+		} else{
+			//autodetect max otherwise
+			this.XaxisLimitAbsMax = 0;
+			for(i=0; i<this.plotBuffer.length; i++){
+				this.XaxisLimitAbsMax = Math.max(this.XaxisLimitAbsMax, this.plotBuffer[i].length);
 			}
 		}
+		this.XaxisLimitMax = this.XaxisLimitAbsMax;
+	
+		this.YaxisLimitMin = (typeof this.demandYmin === 'number') ? this.demandYmin : 0;
+		//use override max if present
+		if(typeof this.demandYmax === 'number'){
+			this.YaxisLimitAbsMax = this.demandYmax;
+		} else{
+			//autodetect max otherwise
+			this.YaxisLimitAbsMax = this.plotBuffer.length;	
+		}
+		this.YaxisLimitMax = this.YaxisLimitAbsMax;
+	}
+
+	//zoom out to the full x-range
+	this.unzoom = function(){
+		var thisSpec;
+
+		this.adjustAxes();
+		this.plotData();
 	};
 
-	//scroll the plot x-window by x to the right
-	this.scrollSpectra = function(step){
+	//scroll the plot x-window by step to the right
+	this.scrollX = function(step){
 		var windowSize = this.XaxisLimitMax - this.XaxisLimitMin;
 
 		this.XaxisLimitMin += step;
@@ -463,36 +497,36 @@ function fieldViewer(canvasID){
 		//TBD: callbacks?
 	};
 
-	//recalculate x axis limits, for use when plots are deleted or hidden
-	this.adjustXaxis = function(){
-		this.XaxisLimitMin = (typeof this.demandXmin === 'number') ? this.demandXmin : 0;
-		//use override max is present
-		if(typeof this.demandXmax === 'number'){
-			this.XaxisLimitAbsMax = this.demandXmax;
-			this.XaxisLimitMax = this.demandXmax;
-			return;
+	//scroll the plot y-window by step down
+	this.scrollY = function(step){
+		var windowSize = this.YaxisLimitMax - this.YaxisLimitMin;
+
+		this.YaxisLimitMin += step;
+		this.YaxisLimitMax += step;
+
+		if(this.YaxisLimitMin < 0){
+			this.YaxisLimitMin = 0;
+			this.YaxisLimitMax = windowSize;
 		}
-		//autodetect max otherwise
-		this.XaxisLimitAbsMax = 0;
-		for(thisSpec in this.plotBuffer){
-			//skip hidden spectra
-			if(this.hideSpectrum[thisSpec]) continue;
 
-			//Find the maximum X value from the size of the data
-			this.XaxisLimitAbsMax = Math.max(this.XaxisLimitAbsMax, this.plotBuffer[thisSpec].length);
+		if(this.YaxisLimitMax > this.YaxisLimitAbsMax){
+			this.YaxisLimitMax = this.YaxisLimitAbsMax;
+			this.YaxisLimitMin = this.YaxisLimitMax - windowSize;
 		}
-		this.XaxisLimitMax = this.XaxisLimitAbsMax;		
-	}
-
-	//zoom out to the full x-range
-	this.unzoom = function(){
-		var thisSpec;
-
-		this.adjustXaxis();
-		this.clearFits();
 
 		this.plotData();
+
+		//TBD: callbacks?
 	};
+
+
+
+
+
+
+
+
+
 
 	//set the axis to 'linear' or 'log', and repaint
 	this.setAxisType = function(type){
@@ -511,19 +545,12 @@ function fieldViewer(canvasID){
 	this.toggleSpectrum = function(spectrumName, hide){
 		this.hideSpectrum[spectrumName] = hide;
 
-		this.adjustXaxis();
+		this.adjustAxes();
 
 		this.plotData();
 	};
 
-	//remove a data series from the buffer
-	this.removeData = function(name){
-		//free the color
-		this.colorAssignment[this.colorAssignment.indexOf(name)] = null;
 
-		//delete the data
-		delete this.plotBuffer[name];
-	};
 
 	//////////////////////////////////////////////////////
 	//initial setup///////////////////////////////////////
@@ -531,7 +558,8 @@ function fieldViewer(canvasID){
 	this.drawFrame();
 	//plot mouseover behavior - report mouse coordinates in bin-space, and manage the cursor style
 	this.canvas.addEventListener('mousemove', function(event){
-		var coords, x, y, xBin, yBin;
+
+		var coords, x, y, xBin, yBin, z;
 		var crosshairs, highlight;
 
 		coords = this.canvas.relMouseCoords(event);
@@ -540,27 +568,15 @@ function fieldViewer(canvasID){
 
         if(x > this.leftMargin && x < this.canvas.width - this.rightMargin && y > this.topMargin){
 	        xBin = Math.floor((x-this.leftMargin)/this.binWidth) + this.XaxisLimitMin;
-    	    
-    	    if(this.AxisType == 1){
-    	    	yBin = (this.canvas.height-this.bottomMargin - y) / this.countHeight;
-    	    	yBin = Math.floor(Math.pow(10,yBin)/10);
-    	    } else {
-    	    	yBin = Math.floor((this.canvas.height-this.bottomMargin - y) / this.countHeight);
-    	    }
-
+    	    yBin = Math.floor((y-this.leftMargin)/this.binWidth) + this.YaxisLimitMin;
     	    this.cursorX = xBin.toFixed(0);
     	    this.cursorY = yBin.toFixed(0);
+    	    z = this.plotBuffer[this.cursorX, this.cursorY];
         }
-        this.mouseMoveCallback(xBin, yBin);
+        this.mouseMoveCallback(xBin, yBin, z);
 
         //change cursor to indicate draggable region:
-        if(this.fitModeEngage){
-        	if( y < (this.canvas.height - this.bottomMargin) )
-	        	document.body.style.cursor = 's-resize';
-	        else 
-	        	document.body.style.cursor = 'n-resize';
-	    }
-        else if(y>this.canvas.height-this.bottomMargin) 
+        if(y>this.canvas.height-this.bottomMargin || x<this.leftMargin ) 
         	document.body.style.cursor = 'pointer';
         else
         	document.body.style.cursor = 'default';
@@ -580,13 +596,15 @@ function fieldViewer(canvasID){
 			crosshairs.graphics.lt(x, this.topMargin);
 			this.containerOverlay.addChild(crosshairs);
 		}
+
 		//highlight region on drag
 		if(this.highlightStart != -1){
 			highlight = new createjs.Shape();
 			highlight.alpha = 0.3;
-			highlight.graphics.beginFill(this.highlightColor).r(this.highlightStart, this.topMargin, Math.max(x, this.leftMargin) - this.highlightStart, this.canvas.height-this.topMargin-this.bottomMargin)
+			highlight.graphics.beginFill(this.highlightColor).r(this.highlightStart[0], this.highlightStart[1], Math.max(x, this.leftMargin) - this.highlightStart[0], Math.min(y, this.canvas.height-this.bottomMargin) - this.highlightStart[1]);
 			this.containerOverlay.addChild(highlight);
 		}
+
 		this.stage.update();
 
 	}.bind(this), false);
@@ -599,17 +617,19 @@ function fieldViewer(canvasID){
 
 	this.canvas.onmousedown = function(event){
 		if(event.button == 0){
-			this.highlightStart = this.canvas.relMouseCoords(event).x;
-			this.XMouseLimitxMin = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin);
+			this.highlightStart = [this.canvas.relMouseCoords(event).x, this.canvas.relMouseCoords(event).y];
+			this.XMouseLimitxMin = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidthX + this.XaxisLimitMin);
+			this.YMouseLimityMin = parseInt( this.YaxisLimitMax - (this.canvas.relMouseCoords(event).y-this.topMargin)/this.binWidthY);
 		}
 	}.bind(this);
 
 	this.canvas.onmouseup = function(event){
 			if(event.button == 0){
 				this.highlightStart = -1;
-				this.XMouseLimitxMax = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin); 
+				this.XMouseLimitxMax = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidthX + this.XaxisLimitMin);
+				this.YMouseLimityMax = parseInt( this.YaxisLimitMax - (this.canvas.relMouseCoords(event).y-this.topMargin)/this.binWidthY);
 				this.DragWindow();
-				this.ClickWindow( parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin) );
+				this.ClickWindow( [this.XMouseLimitxMax, this.YMouseLimityMax] );
 			}
 	}.bind(this);
 
@@ -621,6 +641,10 @@ function fieldViewer(canvasID){
 	this.canvas.oncontextmenu = function(){
 		return false;
 	};
+
+	//doubleclick selection can mess up focus, suppress with CSS:
+	this.canvas.style['-webkit-user-select'] = 'none';
+	this.canvas.style['-moz-user-select'] = 'none';
 
 }
 
