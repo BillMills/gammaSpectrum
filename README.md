@@ -102,6 +102,5 @@ Data management is a bit simpler in the 2D case, since overlaying fields would l
     field.plotBuffer = field.fakeData.gaussian;
     
 ###Interactions
-fieldViewer objects have analagous interactions to their 1D counterparts; clicking two points on a field will crop to a box defined by those two points, and dragging while holding down the left mouse button will achieve a similar effect.  Double click to zoom back out.
-   
+fieldViewer objects have analagous interactions to their 1D counterparts; clicking two points on a field will crop to a box defined by those two points, and dragging while holding down the left mouse button will achieve a similar effect.  Double click to zoom back out.  The demo also has an example of using the member functions scrollX and scrollY, for walking around the canvas in increments of your choosing.
    
