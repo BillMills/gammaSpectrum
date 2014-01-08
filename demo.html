@@ -2,6 +2,7 @@
 
 	<head>
 		<script src="gammaSpectrum.js" type="text/javascript"></script>
+		<script src="fieldViewer.js" type="text/javascript"></script>
 		<script src="http://code.createjs.com/easeljs-0.7.0.min.js"></script>
 		<script src="fitit.js" type="text/javascript"></script>
 	</head>
@@ -18,9 +19,15 @@
 		<button id='hide'>Hide Spectrum</button>
 		<button id='show'>Show Spectrum</button>
 		<div id='fitResults'></div>
+		<br><br>
+
+		<canvas id='fieldCanvas' width='450px' height='450px'></canvas>
 
 		<script>
 			function main(){
+				//////////////////////////////////////////////////////
+				//1D spectrum viewer//////////////////////////////////
+				//////////////////////////////////////////////////////
 				var viewer = new spectrumViewer('spectrumCanvas');
 
 				//use the dummy spectrum:
@@ -56,6 +63,16 @@
 				//toggle spectrum
 				document.getElementById('hide').onclick = viewer.toggleSpectrum.bind(viewer, 'demoSpectrum', true);
 				document.getElementById('show').onclick = viewer.toggleSpectrum.bind(viewer, 'demoSpectrum', false);
+
+				////////////////////////////////////////////////
+				//2D field viewer///////////////////////////////
+				////////////////////////////////////////////////
+				var field = new fieldViewer('fieldCanvas');
+
+				field.plotBuffer = field.fakeData.gaussian;
+
+				field.plotData();
+
 			}
 
 

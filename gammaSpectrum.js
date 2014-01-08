@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Bill Mills
+Copyright (c) 2014 Bill Mills
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -166,8 +166,6 @@ function spectrumViewer(canvasID){
 			this.containerMain.addChild(text);
 
 		}
-
-
 
 		//Decorate Y axis/////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the y axis; come as close to a factor of the number of bins as possible:
@@ -346,11 +344,6 @@ function spectrumViewer(canvasID){
 			this.XaxisLimitMin = parseInt(this.XMouseLimitxMin);
 			this.XaxisLimitMax = parseInt(this.XMouseLimitxMax);
 	
-			//TBD: delete?
-			//programatically trigger the fields' onchange:
-			//document.getElementById('LowerXLimit').onchange();
-			//document.getElementById('UpperXLimit').onchange();
-
 			//drawXaxis();
 			this.YaxisLimitMax=5;
 
