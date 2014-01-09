@@ -294,9 +294,6 @@ function fieldViewer(canvasID){
 		this.chooseLimits();
 		this.drawFrame();
 
-console.log([this.XaxisLimitMin, this.XaxisLimitMax])
-console.log([this.YaxisLimitMin, this.YaxisLimitMax])
-
 		for(i=0; i<this.plotBuffer.length; i++){
 			y0 = this.canvas.height - this.bottomMargin - (i+1 - this.YaxisLimitMin)*this.binWidthY; //y coord of top left corner of bin
 			for(j=0; j<this.plotBuffer[i].length; j++){
@@ -454,6 +451,8 @@ console.log([this.YaxisLimitMin, this.YaxisLimitMax])
 
 		if(this.clickBounds.length == 0){
 			this.clickBounds[0] = [bin[0], bin[1]];
+			this.containerMain.addChild(this.containerOverlay.clone(true));
+			this.containerMain.updateCache();
 		} else if(this.clickBounds[0] == 'abort'){
 			this.clickBounds = [];
 		} else if(this.clickBounds.length == 2 ){
@@ -637,24 +636,6 @@ console.log([this.YaxisLimitMin, this.YaxisLimitMax])
 		return label;
 	};
 
-
-
-
-
-
-
-
-	//suppress or unsuppress a spectrum from being shown
-	this.toggleSpectrum = function(spectrumName, hide){
-		this.hideSpectrum[spectrumName] = hide;
-
-		this.adjustAxes();
-
-		this.plotData();
-	};
-
-
-
 	//////////////////////////////////////////////////////
 	//initial setup///////////////////////////////////////
 	//////////////////////////////////////////////////////
@@ -698,6 +679,7 @@ console.log([this.YaxisLimitMin, this.YaxisLimitMax])
 			crosshairs.graphics.mt(x, this.canvas.height-this.bottomMargin);
 			crosshairs.graphics.lt(x, this.topMargin);
 			this.containerOverlay.addChild(crosshairs);
+
 		}
 
 		//highlight region on drag
