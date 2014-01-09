@@ -32,8 +32,10 @@ function fieldViewer(canvasID){
 	this.stage = new createjs.Stage(canvasID);  //transform the canvas into an easelJS sandbox
 	this.containerMain = new createjs.Container(); //layer for main plot
 	this.containerOverlay = new createjs.Container(); //layer for overlay: cursors, range highlights
+	this.containerPersistentOverlay = new createjs.Container(); //layer for persistent overlay elements
 	this.stage.addChild(this.containerMain);
 	this.stage.addChild(this.containerOverlay);
+	this.stage.addChild(this.containerPersistentOverlay);
 
 	//z-scale
 	this.barWidth = 20; //width of z scale bar, in px
@@ -143,11 +145,14 @@ function fieldViewer(canvasID){
 		//Decorate x axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nXticks = 10;
-		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.XaxisLength % tickOptions[i] < this.XaxisLength % this.nXticks)
 				this.nXticks = tickOptions[i];
 		}
+		//edge case
+		if(this.XaxisLength == 2) this.nXticks = 2;
+		if(this.XaxisLength == 3) this.nXticks = 3;
 
 		//draw at most one tick per bin:
 		if(this.XaxisLength < (this.nXticks-1) )
@@ -179,11 +184,14 @@ function fieldViewer(canvasID){
 		//Decorate y axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nYticks = 10;
-		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.YaxisLength % tickOptions[i] < this.YaxisLength % this.nYticks)
 				this.nYticks = tickOptions[i];
 		}
+		//edge case
+		if(this.YaxisLength == 2) this.nYticks = 2;
+		if(this.YaxisLength == 3) this.nYticks = 3;
 
 		//draw at most one tick per bin:
 		if(this.YaxisLength < (this.nYticks-1) )
@@ -314,6 +322,7 @@ function fieldViewer(canvasID){
 				}
 			}
 		}
+		this.containerPersistentOverlay.removeAllChildren();
 		this.containerMain.cache(0, 0, this.canvas.width, this.canvas.height);
 
 		this.stage.update();
@@ -451,8 +460,7 @@ function fieldViewer(canvasID){
 
 		if(this.clickBounds.length == 0){
 			this.clickBounds[0] = [bin[0], bin[1]];
-			this.containerMain.addChild(this.containerOverlay.clone(true));
-			this.containerMain.updateCache();
+			this.containerPersistentOverlay.addChild(this.containerOverlay.clone(true));
 		} else if(this.clickBounds[0] == 'abort'){
 			this.clickBounds = [];
 		} else if(this.clickBounds.length == 2 ){
@@ -467,6 +475,8 @@ function fieldViewer(canvasID){
 			this.YMouseLimityMax = this.clickBounds[1][1];
 			this.DragWindow();
 			this.clickBounds = [];
+			this.containerPersistentOverlay.removeAllChildren();
+			this.stage.update();
 		}
 	};
 
@@ -474,7 +484,7 @@ function fieldViewer(canvasID){
 	this.DragWindow = function(){
 		var buffer;
 
-		//don't even try if there's only one bin selected:
+		//don't even try if there's only two bin selected:
 		if( Math.abs(this.XMouseLimitxMin - this.XMouseLimitxMax)>1 && Math.abs(this.YMouseLimityMin - this.YMouseLimityMax)>1 ){
 			//don't confuse the click limits with the click and drag limits:
 			this.clickBounds[0] = 'abort';
@@ -507,8 +517,10 @@ function fieldViewer(canvasID){
 			this.ZaxisLimitMax=5;
 
 			this.plotData();
+			this.clickBounds = [];
 
-		}
+		} else if(this.XMouseLimitxMin == this.XMouseLimitxMax && this.YMouseLimityMin == this.YMouseLimityMax)
+			this.ClickWindow([this.XMouseLimitxMax, this.YMouseLimityMax]);
 	};
 
 	//recalculate x axis limits, for use when plots are deleted or hidden
@@ -709,17 +721,19 @@ function fieldViewer(canvasID){
 	}.bind(this);
 
 	this.canvas.onmouseup = function(event){
-			if(event.button == 0){
-				this.highlightStart = -1;
-				this.XMouseLimitxMax = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidthX + this.XaxisLimitMin);
-				this.YMouseLimityMax = parseInt( this.YaxisLimitMax - (this.canvas.relMouseCoords(event).y-this.topMargin)/this.binWidthY);
-				this.DragWindow();
-				this.ClickWindow( [this.XMouseLimitxMax, this.YMouseLimityMax] );
-			}
+		if(event.button == 0){
+			this.highlightStart = -1;
+			this.XMouseLimitxMax = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidthX + this.XaxisLimitMin);
+			this.YMouseLimityMax = parseInt( this.YaxisLimitMax - (this.canvas.relMouseCoords(event).y-this.topMargin)/this.binWidthY);
+			this.DragWindow();
+		}
 	}.bind(this);
 
 	this.canvas.ondblclick = function(event){
 		this.unzoom();
+		//make sure nothing from the doubleclick snuck into the click and drag state
+		this.containerPersistentOverlay.removeAllChildren();
+		this.clickBounds = [];
 	}.bind(this);
 
 	//right clicking does obnoxious focus things, messes with canvas onclicks.
