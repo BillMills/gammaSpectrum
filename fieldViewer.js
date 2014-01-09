@@ -46,7 +46,7 @@ function fieldViewer(canvasID){
 	this.rightMargin = 20; //px
 	this.bottomMargin = 50; //px
 	this.topMargin = 20; //px
-	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin - this.barWidth - 3*this.fontScale; //px
+	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin - this.barWidth - 4*this.fontScale; //px
 	this.yAxisPixLength = this.canvas.height - this.topMargin - this.bottomMargin; //px
 	this.binWidthX = 0; //px
 	this.binWidthY = 0; //px
@@ -70,6 +70,7 @@ function fieldViewer(canvasID){
 	this.expFont = '12px Arial'; //default font for exponents
 	this.xAxisTitle = 'X'; //default x-axis title
 	this.yAxisTitle = 'Y'; //default y-axis title
+	this.zAxisTitle = 'Z'; //default z-zxis title
 	this.drawCallback = function(){}; //callback after plotData, no arguments passed.
 	this.demandXmin = null; //override values for x and y limits, to be used in favour of automatically detected limits.
 	this.demandXmax = null;
@@ -252,7 +253,10 @@ function fieldViewer(canvasID){
 			tick.graphics.lt( this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength, this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10);
 			this.containerMain.addChild(tick);
 
-			label = (this.minZ + (this.maxZ - this.minZ)*i/10 ).toFixed(0);
+			if(this.zAxisType == 0) //linear
+				label = (this.minZ + (this.maxZ - this.minZ)*i/10 ).toFixed(0);
+			else //log
+				label = (Math.log10(this.minZ) + (Math.log10(this.maxZ) - Math.log10(this.minZ))*i/10 ).toFixed(0);
 			text = new createjs.Text(label, this.context.font, this.axisColor);
 			text.textBaseline = 'middle';
 			text.x = this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength + this.zAxisLabelOffset;
@@ -261,6 +265,17 @@ function fieldViewer(canvasID){
 		}
 
 		this.containerMain.addChild(this.colorScale);
+
+		//z axis title:
+		if(this.zAxisType == 0)
+			text = new createjs.Text(this.zAxisTitle, this.context.font, this.axisColor);
+		else
+			text = new createjs.Text('log(' + this.zAxisTitle + ')', this.context.font, this.axisColor);
+		text.textBaseline = 'alphabetic';
+		text.rotation = 90;
+		text.x = this.canvas.width - 1.5*this.fontScale;
+		text.y = this.canvas.height/2 - this.context.measureText(this.zAxisTitle).width/2;
+		this.containerMain.addChild(text);
 
 		this.stage.update();
 	};
@@ -277,7 +292,12 @@ function fieldViewer(canvasID){
 			for(j=0; j<this.plotBuffer[i].length; j++){
 				if(i >= this.YaxisLimitMin && i < this.YaxisLimitMax && j >= this.XaxisLimitMin && j<this.XaxisLimitMax){
 					x0 = this.leftMargin + (j - this.XaxisLimitMin)*this.binWidthX; //x coord of top left corner of bin
-					scale = (this.plotBuffer[i][j] - this.minZ) / this.maxZ //map z value of this bin onto [0,1]
+					//linear
+					if(this.zAxisType == 0)
+						scale = (this.plotBuffer[i][j] - this.minZ) / (this.maxZ - this.minZ); //map z value of this bin onto [0,1]
+					//log
+					else
+						scale = (Math.log10(this.plotBuffer[i][j]) - Math.log10(this.minZ)) / (Math.log10(this.maxZ) - Math.log10(this.minZ));
 					scale = Math.max(scale, 0);
 					scale = Math.min(scale, 1);
 					color = this.colorPicker(scale);  //choose the color corresponding to this z value
@@ -562,27 +582,27 @@ function fieldViewer(canvasID){
 		//TBD: callbacks?
 	};
 
-
-
-
-
-
-
-
-
-
 	//set the axis to 'linear' or 'log', and repaint
 	this.setAxisType = function(type){
 		if(type=='log'){
-			this.YaxisLimitMin = 0.1;
-			this.AxisType = 1;
+			this.ZaxisLimitMin = 0.1;
+			this.zAxisType = 1;
 		}
 		else{
-			this.YaxisLimitMin = 0;
-			this.AxisType = 0;
+			this.ZaxisLimitMin = 0;
+			this.zAxisType = 0;
 		}
 		this.plotData();
 	};
+
+
+
+
+
+
+
+
+
 
 	//suppress or unsuppress a spectrum from being shown
 	this.toggleSpectrum = function(spectrumName, hide){
