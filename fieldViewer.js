@@ -35,6 +35,10 @@ function fieldViewer(canvasID){
 	this.stage.addChild(this.containerMain);
 	this.stage.addChild(this.containerOverlay);
 
+	//z-scale
+	this.barWidth = 20; //width of z scale bar, in px
+	this.zAxisLabelOffset = 5; //space to leave between z scale tick marks and labels, in px
+
 	//axes & drawing
 	this.fontScale = Math.min(Math.max(this.canvas.width / 50, 10), 16); // 10 < fontScale < 16
 	this.context.font = this.fontScale + 'px Arial';
@@ -42,7 +46,7 @@ function fieldViewer(canvasID){
 	this.rightMargin = 20; //px
 	this.bottomMargin = 50; //px
 	this.topMargin = 20; //px
-	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin; //px
+	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin - this.barWidth - 3*this.fontScale; //px
 	this.yAxisPixLength = this.canvas.height - this.topMargin - this.bottomMargin; //px
 	this.binWidthX = 0; //px
 	this.binWidthY = 0; //px
@@ -84,7 +88,7 @@ function fieldViewer(canvasID){
 	for(var i=0; i<100; i++){
 		this.fakeData.gaussian[i] = [];
 		for(var j=0; j<100; j++){
-			this.fakeData.gaussian[i][j] = Math.exp(-(i-50)*(i-50)/(50)) * Math.exp(-(j-50)*(j-50)/(50));
+			this.fakeData.gaussian[i][j] = 100 * Math.exp(-(i-50)*(i-50)/(50)) * Math.exp(-(j-50)*(j-50)/(50));
 		}
 	}
 	this.entries = 0; //number of entries in the displayed portion of the field in plotBuffer
@@ -129,8 +133,8 @@ function fieldViewer(canvasID){
 		axis.graphics.ss(this.axisLineWidth).s(this.axisColor);
 		axis.graphics.mt(this.leftMargin, this.topMargin);
 		axis.graphics.lt(this.leftMargin, this.canvas.height-this.bottomMargin);
-		axis.graphics.lt(this.canvas.width - this.rightMargin, this.canvas.height - this.bottomMargin);
-		axis.graphics.lt(this.canvas.width - this.rightMargin, this.topMargin);
+		axis.graphics.lt(this.leftMargin + this.xAxisPixLength, this.canvas.height - this.bottomMargin);
+		axis.graphics.lt(this.leftMargin + this.xAxisPixLength, this.topMargin);
 		axis.graphics.lt(this.leftMargin, this.topMargin);
 		this.containerMain.addChild(axis);
 
@@ -208,7 +212,7 @@ function fieldViewer(canvasID){
 		//x axis title:
 		text = new createjs.Text(this.xAxisTitle, this.context.font, this.axisColor);
 		text.textBaseline = 'bottom';
-		text.x = this.canvas.width - this.rightMargin - this.context.measureText(this.xAxisTitle).width;
+		text.x = this.leftMargin + this.xAxisPixLength - this.context.measureText(this.xAxisTitle).width;
 		text.y = this.canvas.height - this.fontScale/2;
 		this.containerMain.addChild(text);
 
@@ -218,8 +222,47 @@ function fieldViewer(canvasID){
 		text.rotation = -90;
 		text.x = this.leftMargin*0.25;
 		text.y = this.context.measureText(this.yAxisTitle).width + this.topMargin;
-		this.containerMain.addChild(text);		
+		this.containerMain.addChild(text);
 
+		//draw legend scale bar
+		this.drawScale();
+
+	};
+
+	this.drawScale = function(){
+		var i, colorGrad, color, outline, tick, label, text;
+
+		//draw color scale and outline:
+		this.colorScale = new createjs.Container();
+		for(i=0; i<100; i++){
+			color = this.colorPicker(i/100);
+			colorGrad = new createjs.Shape();
+			colorGrad.graphics.f(color).r(Math.round(this.leftMargin + this.xAxisPixLength + this.rightMargin/2), Math.round(this.canvas.height - this.bottomMargin - (i+1)*this.yAxisPixLength/100), Math.round(this.barWidth), Math.round(this.yAxisPixLength/100) );
+			this.colorScale.addChild(colorGrad);
+		}
+		outline = new createjs.Shape();
+		outline.graphics.ss(this.axisLineWidth).s(this.axisColor).r(this.leftMargin + this.xAxisPixLength + this.rightMargin/2, this.topMargin, this.barWidth, this.yAxisPixLength);
+		this.colorScale.addChild(outline);
+
+		//ticks & labels
+		for(i=0; i<11; i++){
+			tick = new createjs.Shape();
+			tick.graphics.ss(this.axisLineWidth).s(this.axisColor);
+			tick.graphics.mt( this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth, this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10);
+			tick.graphics.lt( this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength, this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10);
+			this.containerMain.addChild(tick);
+
+			label = (this.minZ + (this.maxZ - this.minZ)*i/10 ).toFixed(0);
+			text = new createjs.Text(label, this.context.font, this.axisColor);
+			text.textBaseline = 'middle';
+			text.x = this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength + this.zAxisLabelOffset;
+			text.y = this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10;
+			this.containerMain.addChild(text);	
+		}
+
+		this.containerMain.addChild(this.colorScale);
+
+		this.stage.update();
 	};
 
 	//update the plot
@@ -239,7 +282,7 @@ function fieldViewer(canvasID){
 					scale = Math.min(scale, 1);
 					color = this.colorPicker(scale);  //choose the color corresponding to this z value
 					cell = new createjs.Shape();  //add the cell to the plot
-					cell.graphics.f(color).r(x0, y0, this.binWidthX, this.binWidthY);
+					cell.graphics.f(color).r(Math.round(x0), Math.round(y0), (j < this.XaxisLimitMax-1) ? Math.ceil(this.binWidthX) : Math.floor(this.binWidthX), Math.ceil(this.binWidthY));
 					this.containerMain.addChild(cell);
 				}
 			}
@@ -583,11 +626,11 @@ function fieldViewer(canvasID){
 
         //draw crosshairs
         this.containerOverlay.removeAllChildren();
-        if(x > this.leftMargin && x < this.canvas.width - this.rightMargin && y > this.topMargin && y<this.canvas.height-this.bottomMargin){
+        if(x > this.leftMargin && x < this.leftMargin + this.xAxisPixLength && y > this.topMargin && y<this.canvas.height-this.bottomMargin){
 			crosshairs = new createjs.Shape();
 			crosshairs.graphics.ss(this.axisLineWidth).s(this.axisColor);
 			crosshairs.graphics.mt(this.leftMargin, y);
-			crosshairs.graphics.lt(this.canvas.width-this.rightMargin, y);
+			crosshairs.graphics.lt(this.leftMargin + this.xAxisPixLength, y);
 			this.containerOverlay.addChild(crosshairs);
 
 			crosshairs = new createjs.Shape();
@@ -601,7 +644,7 @@ function fieldViewer(canvasID){
 		if(this.highlightStart != -1){
 			highlight = new createjs.Shape();
 			highlight.alpha = 0.3;
-			highlight.graphics.beginFill(this.highlightColor).r(this.highlightStart[0], this.highlightStart[1], Math.max(x, this.leftMargin) - this.highlightStart[0], Math.min(y, this.canvas.height-this.bottomMargin) - this.highlightStart[1]);
+			highlight.graphics.beginFill(this.highlightColor).r(this.highlightStart[0], this.highlightStart[1], Math.min(Math.max(x, this.leftMargin), this.leftMargin+this.xAxisPixLength) - this.highlightStart[0], Math.max(Math.min(y, this.canvas.height-this.bottomMargin), this.topMargin) - this.highlightStart[1]);
 			this.containerOverlay.addChild(highlight);
 		}
 
