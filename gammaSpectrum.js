@@ -348,16 +348,24 @@ function spectrumViewer(canvasID){
 			this.YaxisLimitMax=5;
 
 			this.plotData();
-
-		}
+			this.clickBounds = [];
+		} else
+			this.ClickWindow(this.XMouseLimitxMax)
 	};
 
 	//handle clicks on the plot
 	this.ClickWindow = function(bin){
+		var redline;
 
 		//decide what to do with the clicked limits - zoom or fit?
 		if(this.clickBounds.length == 0){
 			this.clickBounds[0] = bin;
+			redline = new createjs.Shape();
+			redline.graphics.ss(this.axisLineWidth).s('#FF0000');
+			redline.graphics.mt(this.leftMargin + this.binWidth*(bin-this.XaxisLimitMin), this.canvas.height - this.bottomMargin);
+			redline.graphics.lt(this.leftMargin + this.binWidth*(bin-this.XaxisLimitMin), this.topMargin);
+			this.containerMain.addChild(redline);
+			this.stage.update();
 		} else if(this.clickBounds[0] == 'abort' && !this.fitModeEngage){
 			this.clickBounds = [];
 		} else if(this.clickBounds.length == 2 ){
@@ -753,7 +761,6 @@ function spectrumViewer(canvasID){
 				this.highlightStart = -1;
 				this.XMouseLimitxMax = parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin); 
 				this.DragWindow();
-				this.ClickWindow( parseInt((this.canvas.relMouseCoords(event).x-this.leftMargin)/this.binWidth + this.XaxisLimitMin) );
 			}
 	}.bind(this);
 
