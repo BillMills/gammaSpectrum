@@ -46,7 +46,7 @@ function fieldViewer(canvasID){
 	this.rightMargin = 20; //px
 	this.bottomMargin = 50; //px
 	this.topMargin = 20; //px
-	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin - this.barWidth - 4*this.fontScale; //px
+	this.xAxisPixLength = this.canvas.width - this.leftMargin - this.rightMargin - this.barWidth - 7*this.fontScale; //px
 	this.yAxisPixLength = this.canvas.height - this.topMargin - this.bottomMargin; //px
 	this.binWidthX = 0; //px
 	this.binWidthY = 0; //px
@@ -231,7 +231,7 @@ function fieldViewer(canvasID){
 	};
 
 	this.drawScale = function(){
-		var i, colorGrad, color, outline, tick, label, text;
+		var i, colorGrad, color, outline, tick, label, text, numDecimal;
 
 		//draw color scale and outline:
 		this.colorScale = new createjs.Container();
@@ -245,6 +245,13 @@ function fieldViewer(canvasID){
 		outline.graphics.ss(this.axisLineWidth).s(this.axisColor).r(this.leftMargin + this.xAxisPixLength + this.rightMargin/2, this.topMargin, this.barWidth, this.yAxisPixLength);
 		this.colorScale.addChild(outline);
 
+		//decide how many decimal places to show in the axis ticks: one more than the negative order of magnitude of the space between ticks, minimum 0.
+		if(this.zAxisType == 0)
+			numDecimal = (this.maxZ - this.minZ)/10;
+		else
+			numDecimal = (Math.log10(this.maxZ) - Math.log10(this.minZ))/10;
+		numDecimal = Math.max(0, -(parseInt(numDecimal.toExponential().slice(numDecimal.toExponential().indexOf('e')+1, numDecimal.toExponential().length), 10) - 1));
+
 		//ticks & labels
 		for(i=0; i<11; i++){
 			tick = new createjs.Shape();
@@ -254,14 +261,12 @@ function fieldViewer(canvasID){
 			this.containerMain.addChild(tick);
 
 			if(this.zAxisType == 0) //linear
-				label = (this.minZ + (this.maxZ - this.minZ)*i/10 ).toFixed(0);
+				label = this.formatAxisNumber(this.minZ + (this.maxZ - this.minZ)*i/10, numDecimal );
 			else //log
-				label = (Math.log10(this.minZ) + (Math.log10(this.maxZ) - Math.log10(this.minZ))*i/10 ).toFixed(0);
-			text = new createjs.Text(label, this.context.font, this.axisColor);
-			text.textBaseline = 'middle';
-			text.x = this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength + this.zAxisLabelOffset;
-			text.y = this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10;
-			this.containerMain.addChild(text);	
+				label = this.formatAxisNumber(Math.log10(this.minZ) + (Math.log10(this.maxZ) - Math.log10(this.minZ))*i/10, numDecimal );
+			label.x = this.leftMargin + this.xAxisPixLength + this.rightMargin/2 + this.barWidth + this.tickLength + this.zAxisLabelOffset;
+			label.y = this.canvas.height - this.bottomMargin - i*this.yAxisPixLength/10;
+			this.containerMain.addChild(label);	
 		}
 
 		this.containerMain.addChild(this.colorScale);
@@ -595,7 +600,37 @@ function fieldViewer(canvasID){
 		this.plotData();
 	};
 
+	//generate an easeljs container with an axis label number nicely formatted:
+	this.formatAxisNumber = function(number, numDecimal){
+		var label = new createjs.Container(),
+			text,
+			base, exponent,
+			value = parseFloat(number.toFixed(numDecimal+1));
 
+		//use scientific notation for large and small values
+		if(value >= 10000 || (value < 0.001 && value > 0) || (value < 0 && value > -0.001) ){
+			base = parseFloat(value.toExponential().slice(0, value.toExponential().indexOf('e'))).toFixed(1) + ' x10' ;
+			exponent = value.toExponential().slice(value.toExponential().indexOf('e')+1, value.toExponential().length);
+			base = new createjs.Text(base, this.context.font, this.axisColor);
+			exponent = new createjs.Text(exponent, this.context.font, this.axisColor);
+			base.textBaseline = 'middle';
+			base.x = 0;
+			base.y = 0;
+			label.addChild(base);
+			exponent.textBaseline = 'middle';
+			exponent.x = base.getBounds().width;
+			exponent.y = -base.getBounds().height;
+			label.addChild(exponent); 
+		} else {
+			text = new createjs.Text(value.toFixed( Math.min(3,numDecimal) ), this.context.font, this.axisColor);
+			text.textBaseline = 'middle';
+			text.x = 0;
+			text.y = 0;
+			label.addChild(text);
+		}		
+
+		return label;
+	};
 
 
 
