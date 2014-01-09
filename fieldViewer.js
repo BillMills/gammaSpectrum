@@ -143,7 +143,7 @@ function fieldViewer(canvasID){
 		//Decorate x axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nXticks = 10;
-		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3, 2];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.XaxisLength % tickOptions[i] < this.XaxisLength % this.nXticks)
 				this.nXticks = tickOptions[i];
@@ -179,7 +179,7 @@ function fieldViewer(canvasID){
 		//Decorate y axis////////////////////////////////////////////////////////
 		//decide how many ticks to draw on the x axis; come as close to a factor of the number of bins as possible:
 		this.nYticks = 10;
-		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3];
+		tickOptions = [10, 9, 8, 7, 6, 5, 4, 3, 2];
 		for(i=0; i<tickOptions.length; i++){
 			if(this.YaxisLength % tickOptions[i] < this.YaxisLength % this.nYticks)
 				this.nYticks = tickOptions[i];
@@ -293,6 +293,9 @@ function fieldViewer(canvasID){
 
 		this.chooseLimits();
 		this.drawFrame();
+
+console.log([this.XaxisLimitMin, this.XaxisLimitMax])
+console.log([this.YaxisLimitMin, this.YaxisLimitMax])
 
 		for(i=0; i<this.plotBuffer.length; i++){
 			y0 = this.canvas.height - this.bottomMargin - (i+1 - this.YaxisLimitMin)*this.binWidthY; //y coord of top left corner of bin
@@ -473,7 +476,7 @@ function fieldViewer(canvasID){
 		var buffer;
 
 		//don't even try if there's only one bin selected:
-		if(this.XMouseLimitxMin != this.XMouseLimitxMax && this.YMouseLimityMin != this.YMouseLimityMax){
+		if( Math.abs(this.XMouseLimitxMin - this.XMouseLimitxMax)>1 && Math.abs(this.YMouseLimityMin - this.YMouseLimityMax)>1 ){
 			//don't confuse the click limits with the click and drag limits:
 			this.clickBounds[0] = 'abort';
 
