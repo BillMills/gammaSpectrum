@@ -119,7 +119,7 @@ function fieldViewer(canvasID){
 	//draw the plot frame
 	this.drawFrame = function(){
 		var binsPerTick, countsPerTick, i, label,
-			axis, tick, text, tickOptions;
+			axis, tick, text, tickOptions, numDecimal;
 
 		//determine bin render width
 		this.binWidthX = this.xAxisPixLength / (this.XaxisLimitMax - this.XaxisLimitMin);
@@ -156,6 +156,10 @@ function fieldViewer(canvasID){
 		//how many bins should there be between each tick?
 		binsPerTick = Math.floor((this.XaxisLimitMax - this.XaxisLimitMin) / this.nXticks);
 
+		//how many decimal places should there be on each tick label?
+		numDecimal = (this.XaxisLimitMax - this.XaxisLimitMin)/(this.nXticks-1);
+		numDecimal = Math.max(0, -(parseInt(numDecimal.toExponential().slice(numDecimal.toExponential().indexOf('e')+1, numDecimal.toExponential().length), 10) - 1));
+
 		//draw x axis ticks & labels:
 		for(i=0; i<( (this.XaxisLength % this.nXticks == 0 || this.XaxisLength % this.nXticks >= 1) ? this.nXticks+1 : this.nXticks); i++){
 			//ticks
@@ -166,13 +170,10 @@ function fieldViewer(canvasID){
 			this.containerMain.addChild(tick);
 
 			//labels
-			label = (this.XaxisLimitMin + i*binsPerTick).toFixed(0);
-			text = new createjs.Text(label, this.context.font, this.axisColor);
-			text.textBaseline = 'top';
-			text.x = this.leftMargin + i*binsPerTick*this.binWidthX - this.context.measureText(label).width/2;
-			text.y = this.canvas.height - this.bottomMargin + this.tickLength + this.xLabelOffset;
-			this.containerMain.addChild(text);
-
+			label = this.formatAxisNumber(this.XaxisLimitMin + i*binsPerTick, numDecimal);
+			label.x = this.leftMargin + i*binsPerTick*this.binWidthX - label.getBounds().width/2;
+			label.y = this.canvas.height - this.bottomMargin + this.tickLength + this.fontScale/2 + this.xLabelOffset;
+			this.containerMain.addChild(label);
 		}
 
 		//Decorate y axis////////////////////////////////////////////////////////
@@ -191,6 +192,10 @@ function fieldViewer(canvasID){
 		//how many bins should there be between each tick?
 		binsPerTick = Math.floor((this.YaxisLimitMax - this.YaxisLimitMin) / this.nYticks);
 
+		//how many decimal places should there be on each tick label?
+		numDecimal = (this.YaxisLimitMax - this.YaxisLimitMin)/(this.nYticks-1);
+		numDecimal = Math.max(0, -(parseInt(numDecimal.toExponential().slice(numDecimal.toExponential().indexOf('e')+1, numDecimal.toExponential().length), 10) - 1));
+
 		//draw y axis ticks & labels:
 		for(i=0; i<( (this.YaxisLength % this.nYticks == 0 || this.YaxisLength % this.nYticks >= 1) ? this.nYticks+1 : this.nYticks); i++){
 			//ticks
@@ -201,13 +206,10 @@ function fieldViewer(canvasID){
 			this.containerMain.addChild(tick);
 
 			//labels
-			label = (this.YaxisLimitMin + i*binsPerTick).toFixed(0);
-			text = new createjs.Text(label, this.context.font, this.axisColor);
-			text.textBaseline = 'middle';
-			text.x = this.leftMargin - this.tickLength - this.context.measureText(label).width - this.yLabelOffset;
-			text.y = this.canvas.height - this.bottomMargin - i*binsPerTick*this.binWidthY;
-			this.containerMain.addChild(text);
-
+			label = this.formatAxisNumber(this.YaxisLimitMin + i*binsPerTick, numDecimal);
+			label.x = this.leftMargin - this.tickLength - label.getBounds().width - this.yLabelOffset;
+			label.y = this.canvas.height - this.bottomMargin - i*binsPerTick*this.binWidthY;
+			this.containerMain.addChild(label);
 		}
 
 		//x axis title:
