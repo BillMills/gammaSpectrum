@@ -720,17 +720,25 @@ function spectrumViewer(canvasID){
         //draw crosshairs
         this.containerOverlay.removeAllChildren();
         if(x > this.leftMargin && x < this.canvas.width - this.rightMargin && y > this.topMargin && y<this.canvas.height-this.bottomMargin){
-			crosshairs = new createjs.Shape();
-			crosshairs.graphics.ss(this.axisLineWidth).s(this.axisColor);
-			crosshairs.graphics.mt(this.leftMargin, y);
-			crosshairs.graphics.lt(this.canvas.width-this.rightMargin, y);
-			this.containerOverlay.addChild(crosshairs);
+        	if(this.clickBounds.length!=1){  //normal crosshairs
+				crosshairs = new createjs.Shape();
+				crosshairs.graphics.ss(this.axisLineWidth).s(this.axisColor);
+				crosshairs.graphics.mt(this.leftMargin, y);
+				crosshairs.graphics.lt(this.canvas.width-this.rightMargin, y);
+				this.containerOverlay.addChild(crosshairs);
 
-			crosshairs = new createjs.Shape();
-			crosshairs.graphics.ss(this.axisLineWidth).s(this.axisColor);
-			crosshairs.graphics.mt(x, this.canvas.height-this.bottomMargin);
-			crosshairs.graphics.lt(x, this.topMargin);
-			this.containerOverlay.addChild(crosshairs);
+				crosshairs = new createjs.Shape();
+				crosshairs.graphics.ss(this.axisLineWidth).s(this.axisColor);
+				crosshairs.graphics.mt(x, this.canvas.height-this.bottomMargin);
+				crosshairs.graphics.lt(x, this.topMargin);
+				this.containerOverlay.addChild(crosshairs);
+			} else { //red vertical line to mark second bound of click-and-zoom
+				crosshairs = new createjs.Shape();
+				crosshairs.graphics.ss(this.axisLineWidth).s('#FF0000');
+				crosshairs.graphics.mt(x, this.canvas.height-this.bottomMargin);
+				crosshairs.graphics.lt(x, this.topMargin);
+				this.containerOverlay.addChild(crosshairs);				
+			}
 		}
 		//highlight region on drag
 		if(this.highlightStart != -1){
