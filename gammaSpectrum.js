@@ -32,9 +32,11 @@ function spectrumViewer(canvasID){
 	this.stage = new createjs.Stage(canvasID);  //transform the canvas into an easelJS sandbox
 	this.containerMain = new createjs.Container(); //layer for main plot
 	this.containerOverlay = new createjs.Container(); //layer for overlay: cursors, range highlights
+	this.containerPersistentOverlay = new createjs.Container(); //layer for persistent overlay features
 	this.containerFit = new createjs.Container(); //layer for fit curves
 	this.stage.addChild(this.containerMain);
 	this.stage.addChild(this.containerOverlay);
+	this.stage.addChild(this.containerPersistentOverlay);
 	this.stage.addChild(this.containerFit);
 
 	//axes & drawing
@@ -364,8 +366,7 @@ function spectrumViewer(canvasID){
 			redline.graphics.ss(this.axisLineWidth).s('#FF0000');
 			redline.graphics.mt(this.leftMargin + this.binWidth*(bin-this.XaxisLimitMin), this.canvas.height - this.bottomMargin);
 			redline.graphics.lt(this.leftMargin + this.binWidth*(bin-this.XaxisLimitMin), this.topMargin);
-			this.containerMain.addChild(redline);
-			this.stage.update();
+			this.containerPersistentOverlay.addChild(redline);
 		} else if(this.clickBounds[0] == 'abort' && !this.fitModeEngage){
 			this.clickBounds = [];
 		} else if(this.clickBounds.length == 2 ){
@@ -384,6 +385,8 @@ function spectrumViewer(canvasID){
 				this.XMouseLimitxMax = this.clickBounds[1];
 				this.DragWindow();
 				this.clickBounds = [];
+				this.containerPersistentOverlay.removeAllChildren();
+				this.stage.update();
 			}
 		}
 	};
