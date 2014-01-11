@@ -248,7 +248,7 @@ function fieldViewer(canvasID){
 		for(i=0; i<100; i++){
 			color = this.colorPicker(i/100);
 			colorGrad = new createjs.Shape();
-			colorGrad.graphics.f(color).r(Math.round(this.leftMargin + this.xAxisPixLength + this.rightMargin/2), Math.round(this.canvas.height - this.bottomMargin - (i+1)*this.yAxisPixLength/100), Math.round(this.barWidth), Math.round(this.yAxisPixLength/100) );
+			colorGrad.graphics.f(color).r(Math.round(this.leftMargin + this.xAxisPixLength + this.rightMargin/2), Math.round(this.canvas.height - this.bottomMargin - (i+1)*this.yAxisPixLength/100), Math.round(this.barWidth), Math.ceil(this.yAxisPixLength/100) );
 			this.colorScale.addChild(colorGrad);
 		}
 		outline = new createjs.Shape();
@@ -635,7 +635,7 @@ function fieldViewer(canvasID){
 			label.addChild(base);
 			exponent.textBaseline = 'middle';
 			exponent.x = base.getBounds().width;
-			exponent.y = -base.getBounds().height;
+			exponent.y = -base.getBounds().height/2;
 			label.addChild(exponent); 
 		} else {
 			text = new createjs.Text(value.toFixed( Math.min(3,numDecimal) ), this.context.font, this.axisColor);
